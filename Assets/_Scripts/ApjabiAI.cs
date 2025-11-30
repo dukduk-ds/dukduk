@@ -1,23 +1,40 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class ApjabiAI : MonoBehaviour
 {
-    public Transform player;          // ÇÃ·¹ÀÌ¾î Transform
-    public float patrolSpeed = 2f;    // ¼øÂû ¼Óµµ
-    public float chaseSpeed = 4f;     // Ãß°İ ¼Óµµ
-    public float detectionRange = 8f; // ÇÃ·¹ÀÌ¾î °¨Áö °Å¸®
-    public float detectionAngle = 70f; // ½Ã¾ß°¢ (µµ ´ÜÀ§)
-    public Transform[] waypoints;     // ¼øÂû ÁöÁ¡µé
+    [Header("í”Œë ˆì´ì–´ ì°¸ì¡°")]
+    public Transform player;
+
+    [Header("ì´ë™/ì¶”ê²© ì„¤ì •")]
+    public float patrolSpeed = 2f;
+    public float chaseSpeed = 4f;
+
+    [Header("ì‹œì•¼ ì„¤ì •")]
+    public float detectionRange = 8f;
+    public float detectionAngle = 70f;
+
+    [Header("ìˆœì°° ê²½ë¡œ")]
+    public Transform[] waypoints;
 
     private CharacterController controller;
     private int currentWaypoint = 0;
+
+    // AI ìƒíƒœë¨¸ì‹ 
     private enum State { Patrol, Chase }
     private State state = State.Patrol;
+
+    // ğŸ”¥ FuseBoxì—ì„œ ì¡°ì ˆí•˜ê¸° ìœ„í•œ ê¸°ë³¸ê°’ ì €ì¥
+    private float baseDetectionRange;
+    private float baseDetectionAngle;
 
     void Awake()
     {
         controller = GetComponent<CharacterController>();
+
+        // ğŸ”¥ ê¸°ë³¸ê°’ ì €ì¥ (FuseBoxê°€ ì¡°ì ˆí•  ìˆ˜ ìˆê²Œ)
+        baseDetectionRange = detectionRange;
+        baseDetectionAngle = detectionAngle;
     }
 
     void Update()
@@ -25,7 +42,7 @@ public class ApjabiAI : MonoBehaviour
         if (player == null)
             return;
 
-        // 1. ÇÃ·¹ÀÌ¾î¸¦ °¨ÁöÇÏ´ÂÁö ¸ÕÀú Ã¼Å©
+        // 1. í”Œë ˆì´ì–´ ë³´ì´ë‚˜?
         bool canSeePlayer = CanSeePlayer();
 
         if (canSeePlayer)
@@ -34,11 +51,10 @@ public class ApjabiAI : MonoBehaviour
         }
         else if (state == State.Chase && !canSeePlayer)
         {
-            // ÇÑµ¿¾È ¸ø º¸¸é ´Ù½Ã ¼øÂû·Î
             state = State.Patrol;
         }
 
-        // 2. »óÅÂ¿¡ µû¶ó Çàµ¿
+        // 2. ìƒíƒœì— ë”°ë¼ í–‰ë™
         switch (state)
         {
             case State.Patrol:
@@ -59,15 +75,15 @@ public class ApjabiAI : MonoBehaviour
         if (dist > detectionRange)
             return false;
 
-        // °¢µµ Ã¼Å©
+        // ê°ë„ ì²´í¬
         float angle = Vector3.Angle(transform.forward, toPlayer.normalized);
         if (angle > detectionAngle * 0.5f)
             return false;
 
-        // (¼±ÅÃ) Raycast·Î ½Ã¾ß ¸·Èù °Í Ã¼Å©ÇÏ°í ½ÍÀ¸¸é ¿©±â¼­ Ãß°¡ °¡´É
-        return true;
+        return true;    // Raycast ì²´í¬ëŠ” ìƒëµ (ë„¤ í”„ë¡œì íŠ¸ê°€ ê°„ë‹¨ êµ¬ì¡°ì—¬ì„œ)
     }
 
+    // --- ìˆœì°° í–‰ë™ ---
     void Patrol()
     {
         if (waypoints == null || waypoints.Length == 0)
@@ -79,7 +95,6 @@ public class ApjabiAI : MonoBehaviour
 
         if (dir.magnitude < 0.2f)
         {
-            // ´ÙÀ½ ¿şÀÌÆ÷ÀÎÆ®·Î
             currentWaypoint = (currentWaypoint + 1) % waypoints.Length;
             return;
         }
@@ -87,6 +102,7 @@ public class ApjabiAI : MonoBehaviour
         MoveAndRotate(dir.normalized, patrolSpeed);
     }
 
+    // --- ì¶”ê²© í–‰ë™ ---
     void Chase()
     {
         Vector3 dir = player.position - transform.position;
@@ -98,12 +114,11 @@ public class ApjabiAI : MonoBehaviour
         MoveAndRotate(dir.normalized, chaseSpeed);
     }
 
+    // ì´ë™ + íšŒì „
     void MoveAndRotate(Vector3 dir, float speed)
     {
-        // ÀÌµ¿
         controller.SimpleMove(dir * speed);
 
-        // ¸ö È¸Àü
         if (dir.sqrMagnitude > 0.001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(dir);
@@ -115,17 +130,23 @@ public class ApjabiAI : MonoBehaviour
         }
     }
 
-    // Scene ºä¿¡¼­ ½Ã¾ß°¢ / °Å¸® º¸ÀÌ°Ô Gizmo ±×¸®±â (µğ¹ö±×¿ë)
+    // --- Gizmo: ì—ë””í„°ì—ì„œ ì‹œì•¼ í‘œì‹œ ---
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
 
-        // ½Ã¾ß°¢ ¼±
         Vector3 leftDir = Quaternion.Euler(0, -detectionAngle * 0.5f, 0) * transform.forward;
         Vector3 rightDir = Quaternion.Euler(0, detectionAngle * 0.5f, 0) * transform.forward;
 
         Gizmos.DrawLine(transform.position, transform.position + leftDir * detectionRange);
         Gizmos.DrawLine(transform.position, transform.position + rightDir * detectionRange);
+    }
+
+    // --- ğŸ”¥ FuseBoxê°€ ì‹œì•¼ ì¡°ì ˆí•  ë•Œ í˜¸ì¶œ ---
+    public void SetVisionMultiplier(float multiplier)
+    {
+        detectionRange = baseDetectionRange * multiplier;
+        detectionAngle = baseDetectionAngle * multiplier;
     }
 }
