@@ -38,6 +38,24 @@ public class PlayerController : MonoBehaviour
     // 캐릭터의 기본 높이 (수그리기 로직에 사용)
     private float originalControllerHeight;
 
+    // --- 생존 및 정신력 관련 지표 (기획서 반영) ---
+    [Header("Survival Stats")]
+    [Tooltip("물리적 피해에 대한 지표")]
+    public float health = 100f; // 체력 (하트 아이콘)
+    [Tooltip("시간 경과에 따라 감소하며, 굶주림 디버프를 유발")]
+    public float hunger = 100f; // 굶주림 (주먹밥 아이콘)
+    [Tooltip("임무 성공 및 대의적 선택 시 상승")]
+    public float trust = 50f;   // 신뢰도 (촛불 아이콘)
+    [Tooltip("임무 실패, 굶주림 등으로 감소하며, 배드 엔딩 분기 유발")]
+    public float sanity = 100f; // 정신력 (뇌/태극 문양)
+    public float money = 0f;    // 소지 금액 (¥)
+
+    // --- 상태 이상 (디버프) ---
+    [Header("Status Effects")]
+    public bool isStealthing = false;
+    public bool hasSickness = false; // 질병 (감기)
+
+    // 이전에 Awake에 있던 초기화 로직을 Start()로 옮겨 초기화 순서의 안정성을 높입니다.
     void Start()
     {
         // CharacterController 컴포넌트를 찾습니다.
