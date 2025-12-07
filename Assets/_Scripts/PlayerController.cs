@@ -1,19 +1,26 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    // --- Public Variables (ÀÎ½ºÆåÅÍ¿¡¼­ ¼öÁ¤) ---
-    [Header("ÇÃ·¹ÀÌ¾î ¼³Á¤")]
+    // --- Public Variables (ì¸ìŠ¤í™í„°ì—ì„œ ìˆ˜ì •) ---
+    [Header("í”Œë ˆì´ì–´ ê¸°ë³¸ ì„¤ì •")]
     public float moveSpeed = 5.0f;
     public float crouchSpeed = 2.0f;
     public float gravity = -9.81f;
-    public float jumpHeight = 1.0f; // ÀÌ °ªÀÌ 0ÀÌ¸é Á¡ÇÁ°¡ ¾È µË´Ï´Ù! ÀÎ½ºÆåÅÍ¿¡¼­ 1 ÀÌ»óÀÎÁö È®ÀÎÇÏ¼¼¿ä.
+    public float jumpHeight = 1.0f;
+    public float rotationSpeed = 500f; // íšŒì „ ì†ë„
 
-    // --- Private Variables (³»ºÎ »ç¿ë) ---
+    [Header("ìˆ¨ê¸°(Crouch) ì„¤ì •")]
+    public float originalHeight = 2.0f; // ìºë¦­í„° ì»¨íŠ¸ë¡¤ëŸ¬ì˜ ì›ë˜ ë†’ì´
+    public float crouchHeight = 1.0f;  // ìˆ¨ì—ˆì„ ë•Œì˜ ë†’ì´
+
+    // --- Private Variables (ë‚´ë¶€ ì‚¬ìš©) ---
     private CharacterController controller;
     private Vector3 velocity;
-    private bool isGrounded; // ¶¥¿¡ ´ê¾Ò´ÂÁö ¸Å ÇÁ·¹ÀÓ ÀúÀåÇÒ º¯¼ö
+    private Animator animator; // ì• ë‹ˆë©”ì´í„° ì»´í¬ë„ŒíŠ¸
+    private Transform cam;     // ë©”ì¸ ì¹´ë©”ë¼ Transform
+    private bool isGrounded;
     private bool isCrouching = false;
     private float currentSpeed;
 
@@ -21,53 +28,102 @@ public class PlayerController : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         currentSpeed = moveSpeed;
+
+        // ğŸ‘ˆ ìˆ˜ì •: ì¹´ë©”ë¼ íƒœê·¸ê°€ ì—†ì„ ê²½ìš° ëŒ€ë¹„
+        if (Camera.main != null)
+        {
+            cam = Camera.main.transform;
+        }
+        else
+        {
+            Debug.LogError("ì”¬ì—ì„œ 'MainCamera' íƒœê·¸ë¥¼ ê°€ì§„ ì¹´ë©”ë¼ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤! íšŒì „ì´ ì‘ë™í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+        }
+        // ğŸ‘ˆ ë©”ì¸ ì¹´ë©”ë¼ì˜ Transformì„ ì°¸ì¡°
+        if (Camera.main != null)
+        {
+            cam = Camera.main.transform;
+        }
+
+        // ğŸ‘ˆ Animator ì»´í¬ë„ŒíŠ¸ ì´ˆê¸°í™” (3D ëª¨ë¸ ìì‹ ì˜¤ë¸Œì íŠ¸ì— ë¶™ì–´ìˆë‹¤ê³  ê°€ì •)
+        animator = GetComponentInChildren<Animator>();
+        if (animator == null)
+        {
+            Debug.LogWarning("Animator ì»´í¬ë„ŒíŠ¸ë¥¼ ìì‹ì—ì„œ ì°¾ì„ ìˆ˜ ì—†ì–´ ì• ë‹ˆë©”ì´ì…˜ì´ ì‘ë™í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+        }
     }
 
     void Update()
     {
-        // --- 1. ¶¥ °¨Áö (°¡Àå ¸ÕÀú!) ---
-        // Character Controller°¡ ¶¥¿¡ ´ê¾Ò´ÂÁö ¸Å ÇÁ·¹ÀÓ È®ÀÎ
-        isGrounded = controller.isGrounded;
+        if (controller == null) return;
+        // ğŸ‘ˆ ì¶”ê°€: camì´ nullì¼ ê²½ìš° Update ë¡œì§ì„ ë°”ë¡œ ì¢…ë£Œ
+        if (cam == null) return;
 
-        // --- 2. Áß·Â ¸®¼Â ---
-        // ¶¥¿¡ ÀÖ°í, ¶³¾îÁö´Â Áß(velocity.y < 0)ÀÌ ¾Æ´Ò ¶§
+        // --- 1. ë•… ê°ì§€ ë° ì¤‘ë ¥ ë¦¬ì…‹ ---
+        isGrounded = controller.isGrounded;
         if (isGrounded && velocity.y < 0)
         {
-            // ¼Óµµ¸¦ 0ÀÌ ¾Æ´Ñ -2f Á¤µµ·Î »ìÂ¦ ´­·¯Áà¼­, ¶¥¿¡¼­ ¶ßÁö ¾Ê°Ô ÇÕ´Ï´Ù.
             velocity.y = -2f;
         }
 
-        // --- 3. ¼û±â (Crouch) ---
+        // --- 2. ìˆ¨ê¸° (Crouch) ë¡œì§ ë° ì»¨íŠ¸ë¡¤ëŸ¬ ë†’ì´ ì¡°ì • ---
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             isCrouching = true;
             currentSpeed = crouchSpeed;
-            // (³ªÁß¿¡ ¿©±â¿¡ '¼û±â' ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà ÄÚµå¸¦ ³ÖÀ¸¸é µË´Ï´Ù)
+            // ì»¨íŠ¸ë¡¤ëŸ¬ ë†’ì´ë¥¼ ë‚®ì¶”ê³  ì„¼í„° ì¡°ì •
+            controller.height = crouchHeight;
+            controller.center = new Vector3(0, crouchHeight / 2, 0);
         }
         else if (Input.GetKeyUp(KeyCode.LeftControl))
         {
             isCrouching = false;
             currentSpeed = moveSpeed;
-            // (³ªÁß¿¡ ¿©±â¿¡ '°È±â' ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà ÄÚµå¸¦ ³ÖÀ¸¸é µË´Ï´Ù)
+            // ì»¨íŠ¸ë¡¤ëŸ¬ ë†’ì´ë¥¼ ë³µêµ¬í•˜ê³  ì„¼í„° ì¡°ì •
+            controller.height = originalHeight;
+            controller.center = new Vector3(0, originalHeight / 2, 0);
         }
 
-        // --- 4. ÀÌµ¿ (Horizontal Movement) ---
+        // --- 3. ì´ë™ ì…ë ¥ ë° íšŒì „ (Rotation & Horizontal Movement) ---
         float x = Input.GetAxis("Horizontal"); // A, D
         float z = Input.GetAxis("Vertical");   // W, S
-        Vector3 move = transform.right * x + transform.forward * z;
-        controller.Move(move * currentSpeed * Time.deltaTime);
 
-        // --- 5. Á¡ÇÁ/³¯±â (Jump/Fly) ---
-        // FÅ°¸¦ ´©¸£°í, (¾Æ±î ÀúÀåÇØµĞ) isGrounded°¡ trueÀÏ ¶§
+        // ì…ë ¥ ë²¡í„°ë¥¼ ë§Œë“­ë‹ˆë‹¤. (Yì¶•ì€ 0)
+        Vector3 inputDirection = new Vector3(x, 0f, z).normalized;
+        float moveMagnitude = inputDirection.magnitude; // ì´ë™ëŸ‰ (ì• ë‹ˆë©”ì´ì…˜ Speedì— ì‚¬ìš©)
+
+        // í”Œë ˆì´ì–´ íšŒì „ ë° ì´ë™ ì²˜ë¦¬
+        if (moveMagnitude >= 0.1f)
+        {
+            // A. íšŒì „ ê°ë„ ê³„ì‚°: ì¹´ë©”ë¼ Yì¶• ê°ë„ + ì…ë ¥ ë°©í–¥ ê°ë„
+            float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+
+            // B. ë¶€ë“œëŸ¬ìš´ íšŒì „ ì ìš©
+            Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+            // C. ì´ë™ ë°©í–¥ ì„¤ì •: íšŒì „ëœ ë°©í–¥ìœ¼ë¡œ ìºë¦­í„°ë¥¼ ì´ë™ì‹œí‚µë‹ˆë‹¤.
+            Vector3 moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDirection.normalized * currentSpeed * Time.deltaTime);
+        }
+
+        // --- 4. ì í”„/ë‚ ê¸° ---
         if (Input.GetKeyDown(KeyCode.F) && isGrounded)
         {
-            // Áß·ÂÀ» ÀÌ±â°í Á¡ÇÁ! (¹°¸® °ø½Ä)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 
-        // --- 6. Áß·Â Àû¿ë (Vertical Movement) ---
-        // ¸Å ÇÁ·¹ÀÓ Áß·ÂÀ» ´õÇÏ°í, ±× °ªÀ¸·Î ÇÃ·¹ÀÌ¾î¸¦ ¼öÁ÷ ÀÌµ¿½ÃÅµ´Ï´Ù.
+        // --- 5. ì¤‘ë ¥ ì ìš© (Vertical Movement) ---
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
+        // ----------------------------------------------------
+        // 6. ì• ë‹ˆë©”ì´ì…˜ ì—…ë°ì´íŠ¸
+        if (animator != null)
+        {
+            // Walkì™€ Idle ì „í™˜ì„ ìœ„í•´ Speed íŒŒë¼ë¯¸í„°ì— ì´ë™ëŸ‰ ì „ë‹¬
+            // Speed íŒŒë¼ë¯¸í„° ê°’ì´ 0ì´ë©´ Idle, 0.1 ì´ìƒì´ë©´ Walkë¡œ ì „í™˜ë©ë‹ˆë‹¤.
+            animator.SetFloat("Speed", moveMagnitude);
+        }
+        // ----------------------------------------------------
     }
 }

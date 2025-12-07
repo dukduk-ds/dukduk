@@ -22,7 +22,7 @@ ModelImporter:
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
     importConstraints: 0
-    animationCompression: 1
+    animationCompression: 3
     animationRotationError: 0.5
     animationPositionError: 0.5
     animationScaleError: 0.5
@@ -80,7 +80,112 @@ ModelImporter:
   humanDescription:
     serializedVersion: 3
     human: []
-    skeleton: []
+    skeleton:
+    - name: Player(Clone)
+      parentName: 
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Armature
+      parentName: Player(Clone)
+      position: {x: -0, y: 0.49111032, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+      scale: {x: 185.58627, y: 185.58627, z: 185.58627}
+    - name: Body
+      parentName: Armature
+      position: {x: -0, y: 0.0018685771, z: 0}
+      rotation: {x: 0.76931095, y: 0, z: 0, w: 0.63887453}
+      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+    - name: Head
+      parentName: Body
+      position: {x: -0, y: 0.010173082, z: 0}
+      rotation: {x: -0.09223242, y: 0, z: -0, w: 0.9957375}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Hair
+      parentName: Head
+      position: {x: -0, y: 0.009717751, z: 1.7763568e-17}
+      rotation: {x: 0.000000017551164, y: -0.000000050367575, z: -0.2244897, w: 0.97447646}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Hair_end
+      parentName: Hair
+      position: {x: -0, y: 0.0032409665, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Wing.L
+      parentName: Body
+      position: {x: -0.004967931, y: 0.009186698, z: 0.00018431306}
+      rotation: {x: -0.06743138, y: 0.06292755, z: 0.6793618, w: 0.72798395}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - name: Wing.L_end
+      parentName: Wing.L
+      position: {x: -0, y: 0.006818542, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Leg.L
+      parentName: Body
+      position: {x: -0.0027361277, y: 0.0009053744, z: -0.00016917802}
+      rotation: {x: 0.00019743673, y: 0.09223216, z: 0.9957352, w: -0.0021341315}
+      scale: {x: 1, y: 1.0000002, z: 1.0000017}
+    - name: Leg.L_end
+      parentName: Leg.L
+      position: {x: -0, y: 0.0033698278, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Wing.R
+      parentName: Body
+      position: {x: 0.004967931, y: 0.009186698, z: 0.00018431306}
+      rotation: {x: -0.06743138, y: -0.06292755, z: -0.6793618, w: 0.72798395}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+    - name: Wing.R_end
+      parentName: Wing.R
+      position: {x: -0, y: 0.006818542, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Leg.R
+      parentName: Body
+      position: {x: 0.0027361277, y: 0.0009053744, z: -0.00016917802}
+      rotation: {x: -0.00019743673, y: 0.09223216, z: 0.9957352, w: 0.0021341315}
+      scale: {x: 1, y: 1.0000002, z: 1.0000017}
+    - name: Leg.R_end
+      parentName: Leg.R
+      position: {x: -0, y: 0.0033698278, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Bone
+      parentName: Armature
+      position: {x: -0, y: 0.0018685771, z: 0}
+      rotation: {x: 0.37482056, y: 1.0186014e-23, z: 8.322688e-17, w: 0.9270974}
+      scale: {x: 1, y: 1, z: 1}
+    - name: Tail
+      parentName: Bone
+      position: {x: -3.3087224e-26, y: 0.01166455, z: 1.4901161e-10}
+      rotation: {x: -0.00032454732, y: -2.3347299e-18, z: -2.268475e-17, w: 0.99999994}
+      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+    - name: Tail_end
+      parentName: Tail
+      position: {x: -0, y: 0.005658717, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: head
+      parentName: Player(Clone)
+      position: {x: -0.00000044703475, y: 3.0463192, z: 0.036768164}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+      scale: {x: 122.05795, y: 122.05795, z: 122.05795}
+    - name: eyebrow
+      parentName: Player(Clone)
+      position: {x: -0, y: 3.4725614, z: 1.1712472}
+      rotation: {x: 0.000000021855694, y: -0, z: -0, w: 1}
+      scale: {x: 35.658154, y: 4.619948, z: 11.669031}
+    - name: eyes
+      parentName: Player(Clone)
+      position: {x: -0, y: 3.2291763, z: 1.2256994}
+      rotation: {x: 0.000000021855694, y: -0, z: -0, w: 1}
+      scale: {x: 42.92752, y: 12.070812, z: 12.070812}
+    - name: mouth
+      parentName: Player(Clone)
+      position: {x: -0, y: 3.0554996, z: 1.3188052}
+      rotation: {x: 0.000000021855694, y: -0, z: -0, w: 1}
+      scale: {x: 14.284384, y: 5.962248, z: 9.35118}
     armTwist: 0.5
     foreArmTwist: 0.5
     upperLegTwist: 0.5
@@ -89,15 +194,15 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     globalScale: 1
-    rootMotionBoneName: 
+    rootMotionBoneName: Armature
     hasTranslationDoF: 0
-    hasExtraRoot: 0
+    hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 2
   humanoidOversampling: 1
-  avatarSetup: 0
+  avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
   remapMaterialsIfMaterialImportModeIsNone: 0

@@ -1,74 +1,106 @@
-using UnityEngine;
-using UnityEngine.SceneManagement; // ¾À °ü¸®¸¦ À§ÇØ ÇÊ¼ö!
-// using System.IO; // (³ªÁß¿¡ ¼¼ÀÌºê/·Îµå ½Ã ÆÄÀÏ ÀÔÃâ·ÂÀ» À§ÇØ ÇÊ¿ä)
+ï»¿using UnityEngine;
+using UnityEngine.SceneManagement;
+// using System.IO; 
 
 public class GameManager : MonoBehaviour
 {
-    // ½Ì±ÛÅæ(Singleton) ÆĞÅÏ: °ÔÀÓ ³»³» µü ÇÏ³ª¸¸ Á¸ÀçÇÏµµ·Ï ¸¸µê
+    // ì‹±ê¸€í†¤(Singleton) íŒ¨í„´: ê²Œì„ ë‚´ë‚´ ë”± í•˜ë‚˜ë§Œ ì¡´ì¬í•˜ë„ë¡ ë§Œë“¦
     public static GameManager Instance { get; private set; }
 
     void Awake()
     {
-        // --- ½Ì±ÛÅæ ¼³Á¤ ---
+        // --- ì‹±ê¸€í†¤ ì„¤ì • ---
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // ´Ù¸¥ ¾ÀÀ¸·Î ³Ñ¾î°¡µµ ÀÌ GameManager´Â ÆÄ±«µÇÁö ¾ÊÀ½!
+            // ë‹¤ë¥¸ ì”¬ìœ¼ë¡œ ë„˜ì–´ê°€ë„ ì´ GameManagerëŠ” íŒŒê´´ë˜ì§€ ì•ŠìŒ
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            Destroy(gameObject); // ÀÌ¹Ì GameManager°¡ ÀÖ´Ù¸é ÀÌ ¿ÀºêÁ§Æ®´Â ÆÄ±«
+            // ì´ë¯¸ GameManagerê°€ ìˆë‹¤ë©´ ì´ ì˜¤ë¸Œì íŠ¸ëŠ” íŒŒê´´
+            Destroy(gameObject);
         }
         // ---------------------
     }
 
-    // --- 1. ¾À ÀüÈ¯ ±â´É (INT ¹æ½Ä) ---
-    // ¾ÀÀÇ 'ºôµå ÀÎµ¦½º(¼ıÀÚ)'¸¦ ¹Ş¾Æ¼­ ÇØ´ç ¾ÀÀ» ºÒ·¯¿À´Â ÇÔ¼ö
+    // --- 1. ì”¬ ì „í™˜ ê¸°ëŠ¥ (INT ë°©ì‹) ---
+    // ì”¬ì˜ 'ë¹Œë“œ ì¸ë±ìŠ¤(ìˆ«ì)'ë¥¼ ë°›ì•„ì„œ í•´ë‹¹ ì”¬ì„ ë¶ˆëŸ¬ì˜¤ëŠ” í•¨ìˆ˜
     public void LoadScene(int sceneIndex)
     {
-        // (³ªÁß¿¡ ¿©±â¿¡ ·Îµù È­¸é(UI) ÄÑ´Â ÄÚµå¸¦ ³ÖÀ» ¼ö ÀÖÀ½)
+        // ì‹œê°„ì„ ë³µêµ¬í•˜ê³  ì”¬ ì „í™˜ì„ ì‹œì‘í•©ë‹ˆë‹¤.
+        Time.timeScale = 1f;
         SceneManager.LoadScene(sceneIndex);
     }
 
-    // (¿¹½Ã) ³ªÁß¿¡ UI ¹öÆ°¿¡ ÀÌ ÇÔ¼öµéÀ» ¹Ù·Î ¿¬°áÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    // í˜„ì¬ ì”¬ì„ ë‹¤ì‹œ ì‹œì‘ (UI ë²„íŠ¼ ì—°ê²°ìš©)
+    public void RestartCurrentScene()
+    {
+        // 1. TimeScale ë³µêµ¬ (0ìœ¼ë¡œ ë©ˆì¶°ìˆëŠ” ê²½ìš° ëŒ€ë¹„)
+        Time.timeScale = 1f;
 
-    // 'Gyeongseong_Hub' ¾À (ºôµå ÀÎµ¦½º 0¹øÀ¸·Î °¡Á¤)
+        // 2. í˜„ì¬ í™œì„±í™”ëœ ì”¬ì„ ë‹¤ì‹œ ë¡œë“œ
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    // --- 2. ê²Œì„ ìƒíƒœ ì œì–´ ê¸°ëŠ¥ (AI, Objective ìŠ¤í¬ë¦½íŠ¸ì—ì„œ í˜¸ì¶œ) ---
+
+    /// <summary>
+    /// ê²Œì„ ì˜¤ë²„(Bad Ending) ìƒíƒœë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+    /// </summary>
+    /// <param name="gameOverUIPanel">í™œì„±í™”í•  ê²Œì„ ì˜¤ë²„ UI íŒ¨ë„</param>
+    public void GameOver(GameObject gameOverUIPanel)
+    {
+        Debug.Log("ğŸš¨ ê²Œì„ ì˜¤ë²„ ë°œìƒ! - ì‹œê°„ì´ ë©ˆì¶¥ë‹ˆë‹¤.");
+        if (gameOverUIPanel != null)
+        {
+            gameOverUIPanel.SetActive(true);
+        }
+        Time.timeScale = 0f; // ê²Œì„ ì‹œê°„ ì •ì§€
+    }
+
+    /// <summary>
+    /// ë¯¸ì…˜ ì„±ê³µ(Good Ending) ìƒíƒœë¥¼ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+    /// </summary>
+    /// <param name="successUIPanel">í™œì„±í™”í•  ë¯¸ì…˜ ì„±ê³µ UI íŒ¨ë„</param>
+    public void MissionSuccess(GameObject successUIPanel)
+    {
+        Debug.Log("ğŸ‰ ë¯¸ì…˜ ì„±ê³µ! - ì‹œê°„ì´ ë©ˆì¶¥ë‹ˆë‹¤.");
+        if (successUIPanel != null)
+        {
+            successUIPanel.SetActive(true);
+        }
+        Time.timeScale = 0f; // ê²Œì„ ì‹œê°„ ì •ì§€
+    }
+
+
+    // --- 3. UI ë²„íŠ¼ ì—°ê²°ìš© ê¸°ëŠ¥ ---
+
+    // ì˜ˆì‹œ: í—ˆë¸Œ ì”¬ (ë¹Œë“œ ì¸ë±ìŠ¤ 0ë²ˆìœ¼ë¡œ ê°€ì •)ìœ¼ë¡œ ë¡œë“œ
     public void LoadHub()
     {
         LoadScene(0);
     }
 
-    // 'Stage_1_KimMaria' ¾À (ºôµå ÀÎµ¦½º 1¹øÀ¸·Î °¡Á¤)
-    public void LoadStage1()
+    // ê²Œì„ ì¢…ë£Œ (PC í”Œë«í¼ìš©)
+    public void QuitGame()
     {
-        LoadScene(1);
+        Debug.Log("ê²Œì„ ì¢…ë£Œ");
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 
-    // 'Stage_2_KimIkSang' ¾À (ºôµå ÀÎµ¦½º 2¹øÀ¸·Î °¡Á¤)
-    public void LoadStage2()
-    {
-        LoadScene(2);
-    }
-
-    // 'Stage_3_KangWooKyu' ¾À (ºôµå ÀÎµ¦½º 3¹øÀ¸·Î °¡Á¤)
-    public void LoadStage3()
-    {
-        LoadScene(3);
-    }
-
-
-    // --- 2. ¼¼ÀÌºê/·Îµå ±âÃÊ (Week 1¿¡¼­´Â ºñ¿öµÒ) ---
-
+    // --- 4. ì„¸ì´ë¸Œ/ë¡œë“œ ê¸°ì´ˆ (í•„ìš”ì‹œ ì‚¬ìš©) ---
     public void SaveGame()
     {
-        // (Week 2-3) ³ªÁß¿¡ ¿©±â¿¡ ÇÃ·¹ÀÌ¾î À§Ä¡, ±¾ÁÖ¸², ½Å·Úµµ µîÀ»
-        // PlayerPrefs³ª JSON ÆÄÀÏ·Î ÀúÀåÇÏ´Â ÄÚµå¸¦ ÀÛ¼ºÇÕ´Ï´Ù.
-        Debug.Log("°ÔÀÓ ÀúÀå ½Ãµµ (¾ÆÁ÷ ±¸Çö ¾È µÊ)");
+        Debug.Log("ê²Œì„ ì €ì¥ ì‹œë„ (ì•„ì§ êµ¬í˜„ ì•ˆ ë¨)");
     }
 
     public void LoadGame()
     {
-        // (Week 2-3) ³ªÁß¿¡ ¿©±â¿¡¼­ ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ºÒ·¯¿À´Â ÄÚµå¸¦ ÀÛ¼ºÇÕ´Ï´Ù.
-        Debug.Log("°ÔÀÓ ºÒ·¯¿À±â ½Ãµµ (¾ÆÁ÷ ±¸Çö ¾È µÊ)");
+        Debug.Log("ê²Œì„ ë¶ˆëŸ¬ì˜¤ê¸° ì‹œë„ (ì•„ì§ êµ¬í˜„ ì•ˆ ë¨)");
     }
 }
