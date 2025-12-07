@@ -1,25 +1,21 @@
-ï»¿using UnityEngine;
+using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    // --- Public Variables (ì¸ìŠ¤í™í„°ì—ì„œ ì¡°ì ˆ ê°€ëŠ¥) ---
-    [Header("í”Œë ˆì´ì–´ ì´ë™ ì„¤ì •")]
+    // --- Public Variables (ÀÎ½ºÆåÅÍ¿¡¼­ ¼öÁ¤) ---
+    [Header("ÇÃ·¹ÀÌ¾î ¼³Á¤")]
     public float moveSpeed = 5.0f;
     public float crouchSpeed = 2.0f;
     public float gravity = -9.81f;
-    public float jumpHeight = 1.0f;
+    public float jumpHeight = 1.0f; // ÀÌ °ªÀÌ 0ÀÌ¸é Á¡ÇÁ°¡ ¾È µË´Ï´Ù! ÀÎ½ºÆåÅÍ¿¡¼­ 1 ÀÌ»óÀÎÁö È®ÀÎÇÏ¼¼¿ä.
 
-    // --- Private Variables ---
+    // --- Private Variables (³»ºÎ »ç¿ë) ---
     private CharacterController controller;
     private Vector3 velocity;
-    private bool isGrounded;
+    private bool isGrounded; // ¶¥¿¡ ´ê¾Ò´ÂÁö ¸Å ÇÁ·¹ÀÓ ÀúÀåÇÒ º¯¼ö
     private bool isCrouching = false;
     private float currentSpeed;
-
-    // ğŸ”§ ìë¬¼ì‡  í•´ì œìš© (ì¼ë‹¨ trueë¡œ í…ŒìŠ¤íŠ¸ - ì¸ë²¤í† ë¦¬ ì—°ê²° ê°€ëŠ¥)
-    [HideInInspector]
-    public bool hasLockPick = true;
 
     void Start()
     {
@@ -29,58 +25,49 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // --- 1. ë°”ë‹¥ ì²´í¬ (CharacterController ë‚´ì¥) ---
+        // --- 1. ¶¥ °¨Áö (°¡Àå ¸ÕÀú!) ---
+        // Character Controller°¡ ¶¥¿¡ ´ê¾Ò´ÂÁö ¸Å ÇÁ·¹ÀÓ È®ÀÎ
         isGrounded = controller.isGrounded;
 
-        // ì°©ì§€ í›„ yì†ë„ ì´ˆê¸°í™”
+        // --- 2. Áß·Â ¸®¼Â ---
+        // ¶¥¿¡ ÀÖ°í, ¶³¾îÁö´Â Áß(velocity.y < 0)ÀÌ ¾Æ´Ò ¶§
         if (isGrounded && velocity.y < 0)
         {
+            // ¼Óµµ¸¦ 0ÀÌ ¾Æ´Ñ -2f Á¤µµ·Î »ìÂ¦ ´­·¯Áà¼­, ¶¥¿¡¼­ ¶ßÁö ¾Ê°Ô ÇÕ´Ï´Ù.
             velocity.y = -2f;
         }
 
-        // --- 2. ì›…í¬ë¦¬ê¸° (Crouch) ---
+        // --- 3. ¼û±â (Crouch) ---
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             isCrouching = true;
             currentSpeed = crouchSpeed;
+            // (³ªÁß¿¡ ¿©±â¿¡ '¼û±â' ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà ÄÚµå¸¦ ³ÖÀ¸¸é µË´Ï´Ù)
         }
         else if (Input.GetKeyUp(KeyCode.LeftControl))
         {
             isCrouching = false;
             currentSpeed = moveSpeed;
+            // (³ªÁß¿¡ ¿©±â¿¡ '°È±â' ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà ÄÚµå¸¦ ³ÖÀ¸¸é µË´Ï´Ù)
         }
 
-        // --- 3. ì¢Œìš°/ì•ë’¤ ì´ë™ ---
-        float x = Input.GetAxis("Horizontal");
-        float z = Input.GetAxis("Vertical");
-
+        // --- 4. ÀÌµ¿ (Horizontal Movement) ---
+        float x = Input.GetAxis("Horizontal"); // A, D
+        float z = Input.GetAxis("Vertical");   // W, S
         Vector3 move = transform.right * x + transform.forward * z;
         controller.Move(move * currentSpeed * Time.deltaTime);
 
-        // --- 4. ì í”„ ---
+        // --- 5. Á¡ÇÁ/³¯±â (Jump/Fly) ---
+        // FÅ°¸¦ ´©¸£°í, (¾Æ±î ÀúÀåÇØµĞ) isGrounded°¡ trueÀÏ ¶§
         if (Input.GetKeyDown(KeyCode.F) && isGrounded)
         {
+            // Áß·ÂÀ» ÀÌ±â°í Á¡ÇÁ! (¹°¸® °ø½Ä)
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 
-        // --- 5. ì¤‘ë ¥ ì²˜ë¦¬ ---
+        // --- 6. Áß·Â Àû¿ë (Vertical Movement) ---
+        // ¸Å ÇÁ·¹ÀÓ Áß·ÂÀ» ´õÇÏ°í, ±× °ªÀ¸·Î ÇÃ·¹ÀÌ¾î¸¦ ¼öÁ÷ ÀÌµ¿½ÃÅµ´Ï´Ù.
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
-    }
-
-    // --- ğŸ”¥ ì¶”ê°€ ê¸°ëŠ¥: ì™¸ë¶€ ìŠ¤í¬ë¦½íŠ¸ì—ì„œ ì½ë„ë¡ Getter ì œê³µ ---
-    public bool IsCrouching
-    {
-        get { return isCrouching; }
-    }
-
-    public bool IsMoving
-    {
-        get
-        {
-            float horizontal = Input.GetAxis("Horizontal");
-            float vertical = Input.GetAxis("Vertical");
-            return Mathf.Abs(horizontal) > 0.1f || Mathf.Abs(vertical) > 0.1f;
-        }
     }
 }
